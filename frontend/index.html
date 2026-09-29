@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Proficiency Assessment</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div>
+          <h1>English Proficiency Assessment</h1>
+          <p>Instant CEFR-level evaluation powered by AI</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- Prompt selector -->
+      <section class="card" id="prompt-section">
+        <h2>Speaking Prompt</h2>
+        <p class="hint">Choose a topic and speak for 30–120 seconds. The longer you speak, the more accurate your assessment.</p>
+        <div class="prompt-grid" id="prompt-grid"></div>
+        <div class="custom-prompt-wrap">
+          <input id="custom-prompt" type="text" placeholder="Or type your own topic…" maxlength="200" />
+        </div>
+      </section>
+
+      <!-- Input section -->
+      <section class="card" id="input-section">
+        <div class="tabs">
+          <button class="tab active" data-tab="record">Record</button>
+          <button class="tab" data-tab="upload">Upload</button>
+        </div>
+
+        <!-- Record tab -->
+        <div class="tab-panel" id="tab-record">
+          <div class="recorder">
+            <div class="mic-container" id="mic-container">
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4zm0 2a2 2 0 0 1 2 2v6a2 2 0 0 1-4 0V5a2 2 0 0 1 2-2z"/>
+                <path d="M19 11a1 1 0 0 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.92V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A7 7 0 0 0 19 11z"/>
+              </svg>
+            </div>
+            <div class="timer" id="timer">0:00</div>
+            <canvas id="waveform" width="500" height="60"></canvas>
+            <div class="rec-controls">
+              <button class="btn btn-primary" id="btn-record">Start Recording</button>
+              <button class="btn btn-secondary hidden" id="btn-stop">Stop</button>
+              <button class="btn btn-ghost hidden" id="btn-rerecord">Re-record</button>
+            </div>
+            <audio id="audio-playback" controls class="hidden"></audio>
+          </div>
+        </div>
+
+        <!-- Upload tab -->
+        <div class="tab-panel hidden" id="tab-upload">
+          <div class="dropzone" id="dropzone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>Drag &amp; drop an audio file here</p>
+            <p class="hint">or</p>
+            <label class="btn btn-secondary" for="file-input">Browse files</label>
+            <input id="file-input" type="file" accept="audio/*" hidden />
+            <p class="hint">Supports WAV, MP3, OGG, WebM, M4A, FLAC • Max 25 MB</p>
+          </div>
+          <div id="file-preview" class="file-preview hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+            </svg>
+            <span id="file-name"></span>
+            <button class="icon-btn" id="btn-remove-file" title="Remove">✕</button>
+          </div>
+        </div>
+
+        <div class="assess-row">
+          <button class="btn btn-accent" id="btn-assess" disabled>Assess My English</button>
+        </div>
+      </section>
+
+      <!-- Loading state -->
+      <section class="card hidden" id="loading-section">
+        <div class="loading-inner">
+          <div class="spinner"></div>
+          <div class="loading-steps" id="loading-steps">
+            <div class="step active" id="step-1">Analysing pronunciation &amp; fluency…</div>
+            <div class="step" id="step-2">Evaluating grammar &amp; vocabulary…</div>
+            <div class="step" id="step-3">Calculating CEFR level…</div>
+            <div class="step" id="step-4">Generating personalised feedback…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results section -->
+      <section class="card hidden" id="results-section">
+        <div class="results-header">
+          <div class="cefr-badge" id="cefr-badge">
+            <span class="cefr-level" id="cefr-level">B2</span>
+            <span class="cefr-desc" id="cefr-desc">Upper Intermediate</span>
+          </div>
+          <div class="overall-score">
+            <div class="score-ring-wrap">
+              <svg class="score-ring" viewBox="0 0 120 120">
+                <circle class="ring-bg" cx="60" cy="60" r="50"/>
+                <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+              </svg>
+              <div class="score-center">
+                <span class="score-num" id="overall-score">0</span>
+                <span class="score-label">/ 100</span>
+              </div>
+            </div>
+            <p class="score-title">Overall Score</p>
+          </div>
+        </div>
+
+        <!-- Component bars -->
+        <div class="components">
+          <h3>Component Scores</h3>
+          <div class="bar-list" id="bar-list"></div>
+        </div>
+
+        <!-- Radar chart -->
+        <div class="chart-wrap">
+          <canvas id="radar-chart"></canvas>
+        </div>
+
+        <!-- Transcript -->
+        <div class="transcript-wrap">
+          <h3>Your Transcript</h3>
+          <blockquote id="transcript-text"></blockquote>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback-wrap">
+          <h3>Personalised Feedback</h3>
+          <p id="feedback-text"></p>
+        </div>
+
+        <!-- Vocabulary -->
+        <div class="vocab-wrap" id="vocab-wrap"></div>
+
+        <!-- Word errors -->
+        <div class="words-wrap hidden" id="words-wrap">
+          <h3>Pronunciation Notes</h3>
+          <div class="word-chips" id="word-chips"></div>
+        </div>
+
+        <div class="results-footer">
+          <button class="btn btn-primary" id="btn-new">New Assessment</button>
+        </div>
+      </section>
+
+      <!-- Error banner -->
+      <div class="error-banner hidden" id="error-banner">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <span id="error-text"></span>
+        <button class="icon-btn" id="btn-dismiss-error">✕</button>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
